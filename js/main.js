@@ -115,4 +115,76 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 900);
     });
   }
+
+  // 5. Cookie & Privacy Banner Management
+  const consentKey = 'arcania_cookie_consent';
+
+  function showCookieBanner() {
+    // Prevent duplicate banners
+    if (document.getElementById('cookieBanner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'cookieBanner';
+    banner.className = 'cookie-banner';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-live', 'polite');
+    banner.setAttribute('aria-label', 'Informativa Cookie e Privacy');
+    banner.innerHTML = `
+      <div class="cookie-banner-container">
+        <div class="cookie-banner-content">
+          <div class="cookie-banner-icon" aria-hidden="true">🍪</div>
+          <div class="cookie-banner-text">
+            <h4>Informativa su Cookie & Privacy</h4>
+            <p>
+              Questo sito utilizza <strong>esclusivamente cookie tecnici essenziali</strong> per garantire il corretto funzionamento della navigazione e per memorizzare le tue preferenze. Non utilizziamo cookie di profilazione o tracciamento pubblicitario. I dati personali che ci invii nel modulo contatti vengono trattati nel pieno rispetto del GDPR (Reg. UE 2016/679). Per saperne di più, consulta la nostra <a href="./privacy-policy.html">Privacy Policy</a> e la <a href="./cookie-policy.html">Cookie Policy</a>.
+            </p>
+          </div>
+        </div>
+        <div class="cookie-banner-actions">
+          <button id="acceptCookieBtn" class="btn btn-accent btn-sm">Accetta e Continua</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(banner);
+
+    // Smooth entrance
+    setTimeout(() => {
+      banner.classList.add('visible');
+    }, 150);
+
+    const acceptBtn = document.getElementById('acceptCookieBtn');
+    if (acceptBtn) {
+      acceptBtn.addEventListener('click', () => {
+        try {
+          localStorage.setItem(consentKey, 'accepted');
+        } catch (err) {}
+        banner.classList.remove('visible');
+        setTimeout(() => {
+          if (banner.parentNode) banner.parentNode.removeChild(banner);
+        }, 450);
+      });
+    }
+  }
+
+  // Check consent on page load
+  try {
+    if (!localStorage.getItem(consentKey)) {
+      showCookieBanner();
+    }
+  } catch (err) {
+    showCookieBanner();
+  }
+
+  // Allow reopening cookie preferences from footer link
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'manageCookiesLink') {
+      e.preventDefault();
+      try {
+        localStorage.removeItem(consentKey);
+      } catch (err) {}
+      showCookieBanner();
+    }
+  });
 });
+
